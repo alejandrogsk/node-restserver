@@ -1,7 +1,11 @@
 require("./config/config");
 
 const express = require("express");
+//mongoose
+const mongoose = require("mongoose");
+//express
 const app = express();
+
 const bodyParser = require("body-parser");
 
 // parse application/x-www-form-urlencoded
@@ -10,39 +14,27 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-app.get("/usuario", function (req, res) {
-	res.json("get Usuario");
-});
+//Traemos los usuarios
+app.use(require("./routes/usuario"));
 
-app.post("/usuario", function (req, res) {
-	let body = req.body;
+//mongoose
+//"mongodb://localhost:27017"
+//mongodb+srv://ale:123@cluster0.sbrwx.mongodb.net/rest_db   process.env.DB_CNN
 
-	if (body.nombre === undefined) {
-		res.status(400).json({
-			ok: false,
-			msg: "El nombre es necesario",
-		});
-	} else if (body.edad === undefined) {
-		res.status(400).json({
-			ok: false,
-			msg: "La edad es necesaria",
-		});
+mongoose.connect(
+	process.env.URLDB,
+	{
+		useNewUrlParser: true,
+		useFindAndModify: false,
+		useCreateIndex: true,
+		useUnifiedTopology: true,
+	},
+	{
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+		useCreateIndex: true,
 	}
-
-	res.json({ persona: body });
-});
-
-app.put("/usuario/:id", function (req, res) {
-	let id = req.params.id;
-
-	res.json({
-		id,
-	});
-});
-
-app.delete("/usuario", function (req, res) {
-	res.json("delete Usuario");
-});
+);
 
 app.listen(process.env.PORT, () => {
 	console.log("Escuchando puerto: ", process.env.PORT);
