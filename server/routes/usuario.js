@@ -3,9 +3,14 @@ const bcrypt = require("bcrypt");
 const _ = require("underscore");
 
 const Usuario = require("../models/usuario");
+const {
+	verificarToken,
+	verificarAdmin_Role,
+} = require("../middlewares/autenticacion");
+
 const app = express();
 
-app.get("/usuario", function (req, res) {
+app.get("/usuario", verificarToken, (req, res) => {
 	let desde = req.query.desde || 0;
 	desde = Number(desde);
 
@@ -33,7 +38,7 @@ app.get("/usuario", function (req, res) {
 		});
 });
 
-app.post("/usuario", (req, res) => {
+app.post("/usuario", [verificarToken, verificarAdmin_Role], (req, res) => {
 	let body = req.body;
 
 	//Usuario es un schema de mongoose
@@ -60,7 +65,10 @@ app.post("/usuario", (req, res) => {
 	});
 });
 
-app.put("/usuario/:id", function (req, res) {
+app.put("/usuario/:id", [verificarToken, verificarAdmin_Role], function (
+	req,
+	res
+) {
 	let id = req.params.id;
 	//pick es de underscore.js
 	let body = _.pick(req.body, ["nombre", "email", "img", "role", "estado"]);
@@ -86,41 +94,45 @@ app.put("/usuario/:id", function (req, res) {
 	);
 });
 
-app.delete("/usuario/:id", function (req, res) {
-	let id = req.params.id;
+app.delete(
+	"/usuario/:id",
+	[verificarToken, verificarAdmin_Role],
+	(req, res) => {
+		let id = req.params.id;
 
-	let cambiaEstado = {
-		estado: false,
-	};
+		let cambiaEstado = {
+			estado: false,
+		};
 
-	Usuario.findByIdAndUpdate(
-		id,
-		cambiaEstado,
-		{ new: true, runValidators: true },
-		(err, usuarioBorrado) => {
-			if (err) {
-				return res.status(400).json({
-					ok: false,
-					err,
+		Usuario.findByIdAndUpdate(
+			id,
+			cambiaEstado,
+			{ new: true, runValidators: true },
+			(err, usuarioBorrado) => {
+				if (err) {
+					return res.status(400).json({
+						ok: false,
+						err,
+					});
+				}
+
+				//!usuarioBorrado o usuarioBorrado === null
+				if (!usuarioBorrado) {
+					return res.status(400).json({
+						ok: false,
+						err: {
+							message: "Usuario no encontrado",
+						},
+					});
+				}
+
+				res.json({
+					ok: true,
+					usuario: usuarioBorrado,
 				});
 			}
-
-			//!usuarioBorrado o usuarioBorrado === null
-			if (!usuarioBorrado) {
-				return res.status(400).json({
-					ok: false,
-					err: {
-						message: "Usuario no encontrado",
-					},
-				});
-			}
-
-			res.json({
-				ok: true,
-				usuario: usuarioBorrado,
-			});
-		}
-	);
-});
+		);
+	}
+);
 
 module.exports = app;
