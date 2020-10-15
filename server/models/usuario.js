@@ -44,6 +44,7 @@ let usuarioSchema = new Schema({
 
 //no se devuelve el valor de la contraseña,
 //pero si se registra en base de datos
+
 usuarioSchema.methods.toJSON = function () {
 	let user = this;
 	let userObject = user.toObject();

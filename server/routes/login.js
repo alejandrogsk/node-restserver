@@ -9,7 +9,6 @@ const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 const Usuario = require("../models/usuario");
-const e = require("express");
 
 //const { verificarAdmin_Role } = require("../middlewares/autenticacion");
 
@@ -35,6 +34,7 @@ app.post("/login", (req, res) => {
 				},
 			});
 		}
+
 		/*bcrypt toma la contraseña la encripta y ve si hacen match */
 		if (!bcrypt.compareSync(body.password, usuarioDB.password)) {
 			return res.status(400).json({
