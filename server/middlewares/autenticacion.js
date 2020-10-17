@@ -24,7 +24,7 @@ let verificarToken = (req, res, next) => {
 
 		req.usuario = decoded.usuario;
 
-		//seguir ejecutando el restp
+		//seguir ejecutando el resto
 		next();
 	});
 };
@@ -48,4 +48,33 @@ let verificarAdmin_Role = (req, res, next) => {
 	}
 };
 
-module.exports = { verificarToken, verificarAdmin_Role };
+// ===============
+// Verificar Token para img
+// ===============
+//es igual a verificarToken pero recive el token de manera distinta
+let verificarTokenImg = (req, res, next) => {
+	//esta es la diferencia
+	let token = req.query.token;
+
+	jwt.verify(token, process.env.SEED, (err, decoded) => {
+		if (err) {
+			return res.status(401).json({
+				ok: false,
+				err: {
+					name: "Json Web Token Herror",
+					message: "Token invalido",
+				},
+			});
+		}
+
+		req.usuario = decoded.usuario;
+
+		next();
+	});
+};
+
+module.exports = {
+	verificarToken,
+	verificarAdmin_Role,
+	verificarTokenImg,
+};
